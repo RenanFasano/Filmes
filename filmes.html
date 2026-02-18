@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Top 100 Terror Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #0b0b0f;
+  --card: rgba(255,255,255,0.06);
+  --accent: #e50914;
+  --text: #f5f5f5;
+  --muted: #999;
+  --blur: 16px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: Inter, sans-serif;
+  background: radial-gradient(circle at top, #1a0000, #0b0b0f 60%);
+  color: var(--text);
+  margin:0;
+  padding:40px;
+}
+
+.container {
+  max-width: 1100px;
+  margin:auto;
+}
+
+h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  color: var(--muted);
+  margin-bottom: 30px;
+}
+
+.card {
+  background: var(--card);
+  backdrop-filter: blur(var(--blur));
+  border-radius: 20px;
+  padding: 25px;
+  box-shadow: 0 0 40px rgba(0,0,0,0.6);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.progress-wrap {
+  margin-bottom: 20px;
+}
+
+.progress-bar-bg {
+  width: 100%;
+  height: 18px;
+  background: #222;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #ff0000, #e50914, #ff5f5f);
+  transition: width 0.4s ease;
+}
+
+.progress-text {
+  margin-top: 10px;
+  font-weight: 600;
+}
+
+.movies {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 8px;
+  margin-top: 20px;
+}
+
+label {
+  background: rgba(255,255,255,0.04);
+  padding: 10px 12px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+label:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+input[type="checkbox"] {
+  accent-color: var(--accent);
+  width: 18px;
+  height: 18px;
+}
+
+footer {
+  margin-top: 30px;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h1>Top 100 Terror Tracker</h1>
+<div class="subtitle">Checklist pessoal de filmes de terror com progresso automático.</div>
+
+<div class="card">
+
+<div class="progress-wrap">
+  <div class="progress-bar-bg">
+    <div id="bar" class="progress-bar"></div>
+  </div>
+  <div id="text" class="progress-text">0 de 100 vistos (0%)</div>
+</div>
+
+<div id="movies" class="movies"></div>
+
+</div>
+
+<footer>
+Progresso salvo automaticamente no navegador.
+</footer>
+
+</div>
+
+<script>
+const filmes = [
+"O Exorcista","O Iluminado","Psicose","O Bebê de Rosemary","A Coisa","Halloween","Hereditário","O Massacre da Serra Elétrica","Alien","O Silêncio dos Inocentes",
+"A Bruxa","O Homem de Palha","Suspiria","A Hora do Pesadelo","O Sexto Sentido","O Babadook","Possessão","O Enigma de Outro Mundo","A Mosca","A Noite dos Mortos-Vivos",
+"Invocação do Mal","REC","Corra!","Midsommar","Carrie","Pânico","O Exorcista III","Hellraiser","Raw","O Farol","O Orfanato","O Despertar dos Mortos","O Enigma do Horizonte",
+"Evil Dead","A Entidade","Natal Negro","O Grito","Jogos Mortais","A Corrente do Mal","Cisne Negro",
+"The Descent","O Ritual","Aniquilação","O Nevoeiro","A Profecia","Mártires","Anticristo","Atividade Paranormal","O Hospedeiro","O Homem Invisível","A Bruxa de Blair",
+"Nós","Pearl","X","A Visita","Terrifier","O Albergue","A Casa dos Mil Corpos","Predador","O Poço",
+"O Exorcismo de Emily Rose","O Telefone Preto","A Autópsia","O Último Exorcismo","A Casa do Diabo","Maníaco","Sexta-Feira 13","O Massacre da Serra Elétrica 2","Evil Dead (Original)",
+"Madrugada dos Mortos","O Chamado","O Enigma do Horizonte (Cósmico)","Kill List","A Floresta Maldita","Cemitério Maldito","O Segredo da Cabana","A Invasão dos Mortos",
+"A Profecia II","O Grito 2","O Chamado (J-Horror)","O Massacre da Serra Elétrica Remake","A Casa de Cera","O Exorcista do Papa","O Hospedeiro do Medo",
+"Sangue Negro","A Criada","O Ilusionista","A Entidade 2","O Lobisomem","O Enigma de Outro Mundo (Body Horror)"
+];
+
+const container = document.getElementById("movies");
+
+filmes.forEach((nome, i) => {
+  const id = "f" + i;
+  const checked = localStorage.getItem(id) === "true";
+
+  const label = document.createElement("label");
+  label.innerHTML = `<input type="checkbox" id="${id}" ${checked ? "checked" : ""}> ${nome}`;
+  container.appendChild(label);
+});
+
+function update() {
+  let total = filmes.length;
+  let seen = 0;
+
+  filmes.forEach((_, i) => {
+    const cb = document.getElementById("f" + i);
+    if (cb.checked) seen++;
+    localStorage.setItem("f" + i, cb.checked);
+  });
+
+  const percent = Math.round((seen / total) * 100);
+  document.getElementById("bar").style.width = percent + "%";
+  document.getElementById("text").innerText = `${seen} de ${total} vistos (${percent}%)`;
+}
+
+document.querySelectorAll("input").forEach(cb => cb.addEventListener("change", update));
+update();
+</script>
+
+</body>
+</html>
